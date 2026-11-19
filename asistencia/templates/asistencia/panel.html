@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TecnoAndes S.A.C. - Panel de Asistencia</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      body {
+        margin: 0;
+        background: #f1f5f9;
+        color: #0f172a;
+      }
+      nav {
+        background: #1e293b;
+        color: #fff;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      nav a,
+      nav button {
+        color: #e2e8f0;
+        background: transparent;
+        border: 1px solid #475569;
+        padding: 0.45rem 0.85rem;
+        border-radius: 6px;
+        text-decoration: none;
+        cursor: pointer;
+        margin-left: 0.5rem;
+        font-size: 0.9rem;
+      }
+      .container {
+        max-width: 1080px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      .alerta {
+        background: #fef3c7;
+        border-left: 4px solid #d97706;
+        padding: 0.9rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+      .ok {
+        background: #dcfce7;
+        border-left: 4px solid #16a34a;
+        padding: 0.9rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+      .panel {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+      }
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+      }
+      .btn {
+        background: #1d4ed8;
+        color: #fff;
+        padding: 0.5rem 0.95rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 0.65rem;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.9rem;
+      }
+      th {
+        background: #f8fafc;
+        color: #334155;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <strong>TecnoAndes S.A.C. — Control de Asistencia y Permisos</strong>
+      <div>
+        <span>{{ request.user.username }}</span>
+        <a href="/marcar/">Marcar asistencia</a>
+        <a href="/permisos/nuevo/">Solicitar permiso</a>
+        <a href="/admin/">Admin</a>
+        <form method="post" action="/logout/" style="display: inline">
+          {% csrf_token %}
+          <button type="submit">Salir</button>
+        </form>
+      </div>
+    </nav>
+
+    <div class="container">
+      {% if alerta %}
+      <div class="alerta"><strong>Recordatorio:</strong> {{ alerta }}</div>
+      {% endif %} {% for m in messages %}
+      <div class="ok">{{ m }}</div>
+      {% endfor %}
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2 style="margin: 0">Registros de Asistencia</h2>
+          <a class="btn" href="/marcar/">+ Registrar marcación</a>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Empleado</th>
+              <th>Área</th>
+              <th>Fecha</th>
+              <th>Entrada</th>
+              <th>Salida</th>
+              <th>Horas</th>
+              <th>Extras</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in asistencias %}
+            <tr>
+              <td>{{ a.empleado }}</td>
+              <td>{{ a.empleado.area }}</td>
+              <td>{{ a.fecha }}</td>
+              <td>{{ a.hora_entrada }}</td>
+              <td>{{ a.hora_salida|default:"Pendiente" }}</td>
+              <td>{{ a.horas_trabajadas }} h</td>
+              <td>{{ a.horas_extras }} h</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7">Sin registros de asistencia aún.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2 style="margin: 0">Solicitudes de Permisos y Vacaciones</h2>
+          <a class="btn" href="/permisos/nuevo/">+ Solicitar permiso</a>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Empleado</th>
+              <th>Tipo</th>
+              <th>Inicio</th>
+              <th>Fin</th>
+              <th>Motivo</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in permisos %}
+            <tr>
+              <td>{{ p.empleado }}</td>
+              <td>{{ p.get_tipo_display }}</td>
+              <td>{{ p.fecha_inicio }}</td>
+              <td>{{ p.fecha_fin }}</td>
+              <td>{{ p.motivo|truncatechars:45 }}</td>
+              <td>{{ p.get_estado_display }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6">Sin solicitudes de permisos registradas.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
